@@ -1,0 +1,103 @@
+const express = require('express');
+const bodyParser = require('body-parser');
+const session = require('express-session');
+const sqlite3 = require('sqlite3').verbose();
+const app = express();
+const port = 3000;
+
+const crypto = require('crypto');  // Include crypto module for decoding
+
+// Setup middleware
+app.use(bodyParser.urlencoded({ extended: false }));
+app.use(bodyParser.json());
+app.use(session({
+    secret: 'your-secret-key', 
+    resave: false, 
+    saveUninitialized: true
+}));
+
+// Initialize SQLite database
+const db = new sqlite3.Database('./ctfDB.sqlite');
+
+// Function to decode Hex to ASCII
+function hexToAscii(hex) {
+    let str = '';
+    for (let i = 0; i < hex.length; i += 2) {
+        str += String.fromCharCode(parseInt(hex.substr(i, 2), 16));
+    }
+    return str;
+}
+
+// Serve static files (HTML, CSS)
+app.use(express.static('public'));
+
+// Login route
+app.post('/login', (req, res) => {
+    const { username, password } = req.body;
+
+    db.get('SELECT * FROM users WHERE username = ?', [username], (err, row) => {
+        if (err) {
+            return res.status(500).send('Database error');
+        }
+
+        if (row) {
+            // Decode the stored password from Hex to ASCII
+            const decodedPassword = hexToAscii(row.password);
+		
+	    // Debugging Logs
+d', (req, res) => {
+    if (!req.session.user) {
+        return res.redirect('/');
+    }
+    res.sendFile(__dirname + '/public/dashboard.html');
+});
+
+// Logout route
+app.get('/logout', (req, res) => {
+    req.session.destroy(() => {
+        res.redirect('/');
+    });
+});
+
+// Start the server
+app.listen(port, '0.0.0.0', () => {
+    console.log(`Server running at http://0.0.0.0:${port}`);
+});
+
+
+            console.log(`Stored Hex Password: ${row.password}`);
+            console.log(`Decoded Password: ${decodedPassword}`);
+            console.log(`Entered Password: ${password}`);
+            // Compare the decoded password with the entered password
+            if (decodedPassword === password) {
+                req.session.user = { username: row.username };  // Store session data
+                res.redirect('/dashboard');
+            } else {
+                res.send('Invalid credentials');
+            }
+        } else {
+            res.send('User not found');
+        }
+    });
+});
+
+// Dashboard route (only accessible if logged in)
+app.get('/dashboard', (req, res) => {
+    if (!req.session.user) {
+        return res.redirect('/');
+    }
+    res.sendFile(__dirname + '/public/dashboard.html');
+});
+
+// Logout route
+app.get('/logout', (req, res) => {
+    req.session.destroy(() => {
+        res.redirect('/');
+    });
+});
+
+// Start the server
+app.listen(port, '0.0.0.0', () => {
+    console.log(`Server running at http://0.0.0.0:${port}`);
+});
+
