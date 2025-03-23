@@ -21,7 +21,7 @@ app.use(session({
 
 // Initialize PostgreSQL database using provided Railway database URL
 const pool = new Pool({
-    connectionString: 'postgresql://postgres:tHUPclbFqTJTQrTFbUUlmwEbJhCQGeMN@postgres.railway.internal:5432/railway',
+    connectionString: 'postgresql://postgres:tHUPclbFqTJTQrTFbUUlmwEbJhCQGeMN@metro.proxy.rlwy.net:27858/railway',
     ssl: { rejectUnauthorized: false }
 });
 
